@@ -1,84 +1,102 @@
-using System;
-using System.Numerics;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-// --- 덱의 카드를 관리하는 클래스 ---
 class Deck
 {
-    // --- 덱 변수 및 속성들 ---
-    public string[] _deck { get; private set; }
-    public int count { get; private set; } = 0; // 덱 객체 별로 count를 초기화 -> 전체 카드 배열과 인덱스 분리
-    private int _aCount = 0; // 덱에서 "A" 카드의 개수
-    public string HiddenCard { get { return _deck[0]; } }  // 숨겨진 카드 속성
+    private string[] cards;
+    private int count;
 
-    // --- 생성자 --- 
-    // 전체 카드 배열의 절반 정도의 길이를 가진 덱 생성
     public Deck()
     {
-        _deck = new string[20];
+        cards = new string[21];
+        count = 0;
     }
 
-    // --- 덱에 카드를 더하는 메서드 --- 
-    public void Add(string s)
+    public void Add(string card)
     {
-        _deck[count] = s;
+        cards[count] = card;
         count++;
     }
 
-    // --- 덱에 있는 가장 최근 카드 한 장 출력 메서드 ---
-    public void PrintCard()
+    public string GetCard(int index)
     {
-        Console.WriteLine($"[{_deck[count - 1]}]");
+        return cards[index];
     }
 
-    // --- 덱에 있는 모든 카드 출력 메서드 ---
-    public void PrintAllCards()
+    public void PlayerInfo()
     {
-        foreach (string s in _deck)
+        Console.Write("플레이어의 패: ");
+
+        for (int i = 0; i < count; i++)
         {
-            if (s == null)
-            {
-                continue;
-            }
-            else Console.Write($"[{s}] ");
+            Console.Write($"[{cards[i]}]");
         }
+
+        Console.WriteLine($"\n플레이어 점수: {SumOfCards()}\n");
     }
 
-    // --- 덱에 있는 카드 모두 더하는 메서드 ---
-    // 덱에 A가 있고 score가 21 초과 시 A값 스케일링 
+    public void DealerHiddenInfo()
+    {
+        Console.WriteLine($"딜러의 패: [??] [{cards[1]}]");
+        Console.WriteLine("딜러 점수: ?\n");
+    }
+
+    public void DealerInfo()
+    {
+        Console.Write("딜러의 패: ");
+
+        for (int i = 0; i < count; i++)
+        { 
+            Console.Write($"[{cards[i]}]");
+        }
+
+        Console.WriteLine($"\n딜러 점수: {SumOfCards()}\n");
+    }
+
+    public bool IsBust()
+    {
+        if (SumOfCards() > 21)
+        {
+            return true;
+        }
+        return false;
+    }
+
     public int SumOfCards()
     {
-        int score = 0;
-        foreach (string d in _deck)
+        int sum = 0;
+        int aceCount = 0;
+
+        for (int i = 0; i < count; i++)
         {
-            if (d == null)
-            { continue; }
-            string dTrimmed = d.Substring(1);
-            switch (dTrimmed)
+            string rank = cards[i].Substring(1);
+
+            switch (rank)
             {
                 case "A":
-                    score += 11;
-                    _aCount++;
+                    aceCount++;
+                    sum += 11;
                     break;
+
                 case "J":
-                case "K":
                 case "Q":
-                    score += 10;
+                case "K":
+                    sum += 10;
                     break;
-                case null:
-                    score += 0;
-                    break;
+
                 default:
-                    int.TryParse(dTrimmed, out int value);
-                    score += value;
+                    sum += int.Parse(rank);
                     break;
             }
         }
-        if (score > 21 && _aCount != 0)
-        {
-            score -= 10;
-            _aCount--;
-        }
-        return score;
-    }
 
+        while (sum > 21 && aceCount > 0)
+        {
+            sum -= 10;
+            aceCount--;
+        }
+
+        return sum;
+    }
 }
